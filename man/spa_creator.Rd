@@ -23,11 +23,11 @@ This means that a spatial plateau object is created for representing a specific 
 This function builds a set of spatial plateau objects from a given point dataset assigned with domain-specific numerical values.
 }
 \details{
-It follows the two-stage construction systematic approach described in the research paper of reference.
+It follows the two-stage construction method described in the research paper of reference.
 
 The input \code{tbl} is a point dataset where each point represents the location of a phenomenon treated by the application.
 Further, each point is annotated with numerical data that describe its meaning in the application.
-Therefore, \code{tbl} must have three columns: \emph{x}, \emph{y} for the locations, and \emph{z} for the domain-specific numeric values.
+Therefore, \code{tbl} must have three columns: (\emph{x}, \emph{y}, \emph{z}). The columns \emph{x}, \emph{y} are the pair of coordinates, and \emph{z} is the column containing domain-specific numeric values.
 
 \code{fuzz_policy} refers to the method used by the \strong{fuzzification stage}.
 This stage aims to assign membership degrees to each point of the dataset.
@@ -47,6 +47,11 @@ It accepts two possible values only: either \code{"fsp"} (default) or "\verb{fcp
 \item \code{iter}: A numeric indicating the number of maximum iterations of the clustering algorithm (default is 100)
 }
 
+An optional and common parameter for both fuzzification stages is the \code{"digits"}.
+This is an integer value that indicates the number of decimal digits of the membership degrees calculated by the fuzzification stage.
+That is, it is used to round such membership degrees to a specified number of decimal digits.
+Be careful with this optional parameter! If you specify a low value for \code{"digits"} some membership degrees could be rounded to 0 and thus, some components would not be created.
+
 \code{const_policy} refers to the method used by the \strong{construction stage}.
 This stage aims to create polygons from the labeled point dataset and use them to build spatial plateau objects.
 It accepts two possible values only: either \code{"voronoi"} (default) or "\verb{delaunay"}.
@@ -63,6 +68,12 @@ It accepts two possible values only: either \code{"voronoi"} (default) or "\verb
 Possible values are \code{"min"} (default), and \code{"prod"}.
 Note that it is possible to use your own t-norms. A t-norm should has the following signature: \code{FUN(x)} where
 \item \emph{x} is a numeric vector. Such a function should return a single numeric value.
+}
+
+\code{"convex_hull"} stands for \emph{Convex hull policy}, which accepts the following parameters in \code{...}:
+\itemize{
+\item \code{M}: A numeric vector containing the membership degrees that will be used to create the components. The default is defined by \code{seq(0.05, 1, by = 0.05)}.
+\item \code{d}: A numeric value representing the tolerance distance to compute the membership degree between the elements of \code{M} and the membership degrees of the points. The default is \code{0.05}.
 }
 }
 \examples{
@@ -82,9 +93,17 @@ spa_creator(tbl, classes = classes, mfs = c(cold_mf, hot_mf))
 
 spa_creator(tbl, fuzz_policy = "fcp", k = 4)
 
+spa_creator(tbl, fuzz_policy = "fcp", k = 4, digits = 2)
+
 spa_creator(tbl, fuzz_policy = "fcp", k = 3, const_policy = "delaunay")
 
 spa_creator(tbl, fuzz_policy = "fcp", const_policy = "delaunay", k = 3, tnorm = "prod")
+
+spa_creator(tbl, fuzz_policy = "fcp", k = 2, digits = 2, 
+            M = seq(0.1, 1, by = 0.1), d = 0.05, const_policy = "convex_hull")
+            
+spa_creator(tbl, classes = classes, mfs = c(cold_mf, hot_mf), 
+            digits = 2, const_policy = "convex_hull")
 
 }
 \references{

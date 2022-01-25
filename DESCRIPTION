@@ -1,7 +1,7 @@
 Package: fsr
 Type: Package
 Title: Handling Fuzzy Spatial Data
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: c(
     person("Anderson", "Carniel", email = "accarniel@ufscar.br", role = c("rth", "aut", "cre"), comment = c(ORCID = "0000-0002-8297-9894")),
     person("Felippe", "Galdino", email = "ocfgaldino@gmail.com", role = c("rtm", "aut"), , comment = c(ORCID = "0000-0003-2594-9733")),
@@ -26,7 +26,7 @@ NeedsCompilation: no
 Encoding: UTF-8
 Collate: 'fsr_base.R' 'builder_functions.R' 'fsi_functions.R'
         'utility_functions.R' 'spa_functions.R'
-Packaged: 2021-09-15 21:29:39 UTC; anderson
+Packaged: 2022-01-25 02:35:34 UTC; anderson
 Author: Anderson Carniel [rth, aut, cre]
     (<https://orcid.org/0000-0002-8297-9894>),
   Felippe Galdino [rtm, aut] (<https://orcid.org/0000-0003-2594-9733>),
@@ -34,4 +34,4 @@ Author: Anderson Carniel [rth, aut, cre]
   Markus Schneider [rth]
 Maintainer: Anderson Carniel <accarniel@ufscar.br>
 Repository: CRAN
-Date/Publication: 2021-09-16 07:10:05 UTC
+Date/Publication: 2022-01-25 10:02:42 UTC

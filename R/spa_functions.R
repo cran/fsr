@@ -80,7 +80,7 @@ spa_add_component <- function(pgo, components) {
       pgo@component[[1]] <- component
       pgo@supp <- c
 
-    } else if(!is.null(c) && length(c) >= 1){
+    } else if(!is.null(c) && length(pgo@component) >= 1){
       index = search_by_md(pgo@component, 1, length(pgo@component), m)
 
       # 3. if the membership degree exists in the pgo, we should merge it
@@ -221,7 +221,7 @@ spa_eval <- function(pgo, point){
 #' The type-independent functions are:
 #' 
 #' - `spa_avg_degree` calculates the average membership degree of a spatial plateau object.
-#' - `spa_nofcomp` returns the number of components of a spatial plateau object.
+#' - `spa_ncomp` returns the number of components of a spatial plateau object.
 #' 
 #' The remaining functions are _type-dependent_. This means that the parameter have to be of a specific type.
 #' The type-dependent functions are:
@@ -391,7 +391,7 @@ spa_length <- function(pl){
 #' @title Fuzzy geometric set operations
 #'
 #' @description Fuzzy geometric set operations are given as a family of functions that implements spatial plateau set operations.
-#' These functions produces a spatial plateau object from a specific combination of other two spatial plateau objects, 
+#' These functions yield a spatial plateau object from a specific combination of other two spatial plateau objects, 
 #' such as the intersection of two plateau region objects.
 #'
 #' @usage
@@ -655,7 +655,11 @@ spa_common_points <- function(pline1, pline2, itype = "min"){
         lcomps <- append(lcomps, result_comp)
       } else if(!st_is_empty(sf_result) && st_geometry_type(sf_result) == "GEOMETRYCOLLECTION") {
         type_geom = get_counter_ctype(pline1)
-        result_comp <- new("component", obj = st_union(st_collection_extract(sf_result, type = "POINT"))[[1]], md = result_md)
+        union_obj <- st_union(st_collection_extract(sf_result, type = type_geom))
+        if(inherits(union_obj, "sfc")) {
+          union_obj <- union_obj[[1]]
+        }
+        result_comp <- new("component", obj = union_obj, md = result_md)
         lcomps <- append(lcomps, result_comp)
       }
     }
