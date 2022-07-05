@@ -1,12 +1,12 @@
-b65001daa597c0e2f9b8755cd2b1216b *DESCRIPTION
+a2e4e24fc25abe1f2823396125767d2f *DESCRIPTION
 437a114b53b6dbc0905accacfdae4af6 *NAMESPACE
-b6777d2d8f700d7cc14db34ad44d410e *NEWS.md
-0820bfcc32674a8102c578ddae6c34e0 *R/builder_functions.R
+33504f61ce542a67a77d08f6f970c771 *NEWS.md
+fde4199c6ad4a791238a4d650726da1d *R/builder_functions.R
 da43eb616bd3658de06a45f20b47a13b *R/fsi_functions.R
 8c10b90aded56b2184c554da82d3d511 *R/fsr_base.R
-ce68b2ba8e0d5e2323037d715481789e *R/spa_functions.R
+711204e5a88a206c2f16178181382e21 *R/spa_functions.R
 531eb64b41137f89e6ded5a9f49bf33a *R/utility_functions.R
-c429bc39fc25eb1c92746e3086888866 *README.md
+8f845690abaf9bd2b109f03d88eea593 *README.md
 f0a7b1ce2e85b384674295a6b35c22ce *inst/CITATION
 8951660d65066ccc1e27b485349f2554 *man/PWKT.Rd
 289dc7a012e487e548799a222af850ba *man/as_tibble.pgeometry.Rd
@@ -33,7 +33,7 @@ d45249db3cbed68480c0a550502eec7c *man/spa_add_component.Rd
 2b6935f02823aa7e6681ed65e93f4833 *man/spa_boundary_pregion.Rd
 b7746202386083d390ab11fd4ae64461 *man/spa_contour.Rd
 495d717e1c13a3dbb1570ab7ee0dce39 *man/spa_core.Rd
-4da7f9e0e801c55f8c2cf33f7a66a48c *man/spa_creator.Rd
+4d5f11c37a3f9da76b52c3fd1275a76b *man/spa_creator.Rd
 299912ebe15e698fe7a56db335a5ed7f *man/spa_eval.Rd
 811378f57ad756be6b8803e6a5a388f0 *man/spa_exact_equal.Rd
 65114cbba6d76c26f66f81661776e303 *man/spa_exact_inside.Rd

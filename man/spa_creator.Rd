@@ -7,7 +7,7 @@
 spa_creator(tbl, fuzz_policy = "fsp", const_policy = "voronoi", ...)
 }
 \arguments{
-\item{tbl}{A data.frame or tibble with the following format: (x, y, z)}
+\item{tbl}{A data.frame or tibble with the following format: (x, y, z).}
 
 \item{fuzz_policy}{The fuzzification policy to be employed by the algorithm. See details below.}
 
@@ -31,7 +31,7 @@ Therefore, \code{tbl} must have three columns: (\emph{x}, \emph{y}, \emph{z}). T
 
 \code{fuzz_policy} refers to the method used by the \strong{fuzzification stage}.
 This stage aims to assign membership degrees to each point of the dataset.
-It accepts two possible values only: either \code{"fsp"} (default) or "\verb{fcp"}.
+It accepts three possible values only: \code{"fsp"} (default), or \code{"fcp"}.
 
 \code{"fsp"} stands for \emph{fuzzy set policy} and requires two parameters that should be informed in \code{...}:
 \itemize{
@@ -49,7 +49,7 @@ It accepts two possible values only: either \code{"fsp"} (default) or "\verb{fcp
 
 An optional and common parameter for both fuzzification stages is the \code{"digits"}.
 This is an integer value that indicates the number of decimal digits of the membership degrees calculated by the fuzzification stage.
-That is, it is used to round such membership degrees to a specified number of decimal digits.
+That is, it is used to \strong{round} membership degrees to the specified number of decimal places.
 Be careful with this optional parameter! If you specify a low value for \code{"digits"} some membership degrees could be rounded to 0 and thus, some components would not be created.
 
 \code{const_policy} refers to the method used by the \strong{construction stage}.
@@ -59,6 +59,7 @@ It accepts two possible values only: either \code{"voronoi"} (default) or "\verb
 \code{"voronoi"} stands for \emph{Voronoi diagram policy} and has one optional parameter that can be provided in \code{...}:
 \itemize{
 \item \code{base_poly}: An \code{sfg} object that will be used to clip the generated polygons (optional argument). If this parameter is not provided, the Voronoi is created by using a bounding box (standard behavior of \code{sf}).
+\item \code{d_tolerance}: It refers to the parameter \code{dTolerance} employed by the function \code{st_voronoi} of the package \code{sf}.
 }
 
 \code{"delaunay"} stands for \emph{Delaunay triangulation policy}, which accepts the following parameters in \code{...}:
@@ -66,14 +67,15 @@ It accepts two possible values only: either \code{"voronoi"} (default) or "\verb
 \item \code{base_poly}: An \code{sfg} object that will be used to clip the generated triangles (optional argument).
 \item \code{tnorm}: A t-norm used to calculate the membership degree of the triangle. It should be the name of a vector function.
 Possible values are \code{"min"} (default), and \code{"prod"}.
-Note that it is possible to use your own t-norms. A t-norm should has the following signature: \code{FUN(x)} where
-\item \emph{x} is a numeric vector. Such a function should return a single numeric value.
+Note that it is possible to use your own t-norms. A t-norm should has the following signature: \code{FUN(x)} where \emph{x} is a numeric vector. Such a function should return a single numeric value.
+\item \code{d_tolerance}: It refers to the parameter \code{dTolerance} employed by the function \code{st_triangulate} of the package \code{sf}.
 }
 
 \code{"convex_hull"} stands for \emph{Convex hull policy}, which accepts the following parameters in \code{...}:
 \itemize{
 \item \code{M}: A numeric vector containing the membership degrees that will be used to create the components. The default is defined by \code{seq(0.05, 1, by = 0.05)}.
 \item \code{d}: A numeric value representing the tolerance distance to compute the membership degree between the elements of \code{M} and the membership degrees of the points. The default is \code{0.05}.
+\item \code{base_poly}: An \code{sfg} object that will be used to clip the generated polygons (optional argument).
 }
 }
 \examples{

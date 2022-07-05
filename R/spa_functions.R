@@ -52,7 +52,7 @@ spa_add_component <- function(pgo, components) {
     stop("components is null. It should be a single component or a list of components.", call. = FALSE)
   }
 
-  if(class(pgo) != "pgeometry"){
+  if(!inherits(pgo, "pgeometry")){
     stop(paste(pgo, "is not a pgeometry object.", sep = ' '), call. = FALSE)
   }
 
@@ -61,7 +61,7 @@ spa_add_component <- function(pgo, components) {
   }
 
   #should we check all components or just the first one?
-  if(class(components[[1]]) != "component"){
+  if(!inherits(components[[1]], "component")){
     stop(paste(components, " is not a component object.", sep = ' '), call. = FALSE)
   }
 
@@ -294,8 +294,12 @@ spa_avg_degree <- function(pgo){
   get_md <- function(comp){
     comp@md
   }
-  mds_vec <- unlist(lapply(pgo@component, get_md))
-  mean(mds_vec)
+  if(!fsr_is_empty(pgo)) {
+    mds_vec <- sapply(pgo@component, get_md)
+    mean(mds_vec)
+  } else {
+    0
+  }
 }
 
 #' @name fsr_numerical_operations
@@ -319,20 +323,22 @@ spa_ncomp <- function(pgo){
 #'  
 #' @import sf
 #' @export
-spa_area <- function(pr){
-
-  if(pr@type != "PLATEAUREGION"){
-    stop("The input is not a PLATEAUREGION object.", call. = FALSE)
+spa_area <- function(pr) {
+  if(pr@type != "PLATEAUREGION") {
+    warning("The input is not a PLATEAUREGION object.", call. = FALSE)
+    0
+  } else if(!fsr_is_empty(pr)) {
+    area_comp <- function(comp){
+      md_comp = comp@md
+      area_obj = st_area(comp@obj)
+      area_obj * md_comp
+    }
+    
+    comps_areas <- sapply(pr@component, area_comp)
+    sum(comps_areas)
+  } else {
+    0
   }
-
-  area_comp <- function(comp){
-    md_comp = comp@md
-    area_obj = st_area(comp@obj)
-    area_obj * md_comp
-  }
-
-  comps_areas <- unlist(lapply(pr@component, area_comp))
-  sum(comps_areas)
 }
 
 #' @name fsr_numerical_operations
@@ -343,22 +349,24 @@ spa_area <- function(pr){
 #'  
 #' @import sf lwgeom
 #' @export
-spa_perimeter <- function(pr){
-  
-  if(pr@type != "PLATEAUREGION"){
-    stop("The input is not a PLATEAUREGION object.", call. = FALSE)
+spa_perimeter <- function(pr) {
+  if(pr@type != "PLATEAUREGION") {
+    warning("The input is not a PLATEAUREGION object.", call. = FALSE)
+    0
+  } else if(!fsr_is_empty(pr)) {
+    perimeter_comp <- function(comp) {
+      md_comp = comp@md
+      temp <- st_sfc(comp@obj)
+      st_set_crs(temp, 4326)
+      perimeter_obj = st_perimeter(temp)
+      perimeter_obj * md_comp
+    }
+    
+    comps_perimeter <- sapply(pr@component, perimeter_comp)
+    sum(comps_perimeter)
+  } else {
+    0
   }
-  
-  perimeter_comp <- function(comp){
-    md_comp = comp@md
-    temp <- st_sfc(comp@obj)
-    st_set_crs(temp, 4326)
-    perimeter_obj = st_perimeter(temp)
-    perimeter_obj * md_comp
-  }
-  
-  comps_perimeter <- unlist(lapply(pr@component, perimeter_comp))
-  sum(comps_perimeter)
 }
 
 #' @name fsr_numerical_operations
@@ -371,20 +379,22 @@ spa_perimeter <- function(pr){
 #'  
 #' @import sf
 #' @export
-spa_length <- function(pl){
-
-  if(pl@type != "PLATEAULINE"){
-    stop("The input is not a PLATEAULINE object.", call. = FALSE)
+spa_length <- function(pl) {
+  if(pl@type != "PLATEAULINE") {
+    warning("The input is not a PLATEAULINE object.", call. = FALSE)
+    0
+  } else if(!fsr_is_empty(pl)) {
+    length_comp <- function(comp){
+      md_comp = comp@md
+      length_obj = st_length(comp@obj)
+      length_obj * md_comp
+    }
+  
+    components_lenghts <- sapply(pl@component, length_comp)
+    sum(components_lenghts)
+  } else {
+    0
   }
-
-  length_comp <- function(comp){
-    md_comp = comp@md
-    length_obj = st_length(comp@obj)
-    length_obj * md_comp
-  }
-
-  components_lenghts <- unlist(lapply(pl@component, length_comp))
-  sum(components_lenghts)
 }
 
 
@@ -777,11 +787,14 @@ spa_support <- function(pgo){
 #' @export
 spa_core <- function(pgo){
 
-  last_comp <- tail(pgo@component, 1)
-
-  if(last_comp[[1]]@md == 1){
-    return(last_comp[[1]]@obj)
-  }
+  if(!fsr_is_empty(pgo)) {
+    last_comp <- tail(pgo@component, 1)
+    
+    if(last_comp[[1]]@md == 1){
+      return(last_comp[[1]]@obj)
+    }
+  } 
+  
   sf_type <- get_counter_ctype(pgo)
 
   sfg_obj <- switch(sf_type,
@@ -1053,9 +1066,9 @@ spa_overlap <- function(pgo1, pgo2, itype = "min", ret = "degree", ...){
   supp_pgo1 <- pgo1@supp
   supp_pgo2 <- pgo2@supp
 
-  result <- 0
+  result <- NULL
 
-  if(spa_ncomp(r) == 1 && !(st_is_empty(spa_core(r)))){
+  if(spa_ncomp(r) == 1 && !st_is_empty(spa_core(r))){
     result <- 1
   } else if(st_disjoint(supp_pgo1, supp_pgo2, sparse=FALSE)[1] ||
             st_touches(supp_pgo1, supp_pgo2, sparse=FALSE)[1] ||
@@ -1093,53 +1106,51 @@ spa_meet <- function(pgo1, pgo2, itype = "min", ret = "degree", ...){
   c_ncomp <- spa_ncomp(c)
   p_core <- spa_core(p)
   c_core <- spa_core(c)
+  
+  result <- NULL
 
-  if((p_ncomp == 1) && !(st_is_empty(p_core)) ||
-     (c_ncomp == 1) && !(st_is_empty(c_core))){
+  if((p_ncomp == 1 && !st_is_empty(p_core)) ||
+     (c_ncomp == 1 && !st_is_empty(c_core))) {
     result <- 1
-  }
-
-  supp_1 <- pgo1@supp
-  supp_2 <- pgo2@supp
-
-  pgo1_core <- spa_core(pgo1)
-  pgo2_core <- spa_core(pgo2)
-
-  if((st_disjoint(supp_1, supp_2, sparse=FALSE)[1]) ||
-    !(st_disjoint(pgo1_core, pgo2_core, sparse=FALSE)[1]) ||
-    st_touches(pgo1_core, pgo2_core, sparse=FALSE)[1] ||
-    spa_exact_inside(pgo1, pgo2) ||
-    spa_exact_inside(pgo2, pgo1) ||
-    spa_exact_equal(pgo1, pgo2)){
-
-    result <- 0
-  }
-
-  if(st_relate(supp_1, supp_2, pattern = "F**0*****", sparse=FALSE)[1] ||
-     st_relate(supp_1, supp_2, pattern = "F***0****", sparse=FALSE)[1] ||
-     st_relate(supp_1, supp_2, pattern = "F0*******", sparse=FALSE)[1]){
-    result <- spa_avg_degree(p)
-  } else if (st_relate(supp_1, supp_2, pattern = "F**1*****", sparse=FALSE)[1] ||
-             st_relate(supp_1, supp_2, pattern = "F***1****", sparse=FALSE)[1] ||
-             st_relate(supp_1, supp_2, pattern = "F1*******", sparse=FALSE)[1]){
-    pgo1_boundary <- spa_boundary_pregion(pgo1, bound_part = 'line')
-    pgo2_boundary <- spa_boundary_pregion(pgo2, bound_part = 'line')
-    bl <- spa_intersection(pgo1_boundary, pgo2_boundary, itype = itype)
-
-    plength <- spa_length(bl)
-    length_support <- length(bl@supp)
-
-    result <- plength/length_support
-
   } else {
-    pgo1_boundary <- spa_boundary_pregion(pgo1, bound_part = 'region')
-    pgo2_boundary <- spa_boundary_pregion(pgo2, bound_part = 'region')
-    br <- spa_intersection(pgo1_boundary, pgo2_boundary, itype = itype)
-    br_area <- spa_area(br)
-    area_support <- st_area(br@supp)
-
-    result <- br_area/area_support
-
+    supp_1 <- pgo1@supp
+    supp_2 <- pgo2@supp
+  
+    pgo1_core <- spa_core(pgo1)
+    pgo2_core <- spa_core(pgo2)
+  
+    if(st_disjoint(supp_1, supp_2, sparse=FALSE)[1] ||
+      !st_disjoint(pgo1_core, pgo2_core, sparse=FALSE)[1] ||
+      st_touches(pgo1_core, pgo2_core, sparse=FALSE)[1] ||
+      spa_exact_inside(pgo1, pgo2) ||
+      spa_exact_inside(pgo2, pgo1) ||
+      spa_exact_equal(pgo1, pgo2)){
+  
+      result <- 0
+    } else if(st_relate(supp_1, supp_2, pattern = "F**0*****", sparse=FALSE)[1] ||
+       st_relate(supp_1, supp_2, pattern = "F***0****", sparse=FALSE)[1] ||
+       st_relate(supp_1, supp_2, pattern = "F0*******", sparse=FALSE)[1]){
+      result <- spa_avg_degree(p)
+    } else if (st_relate(supp_1, supp_2, pattern = "F**1*****", sparse=FALSE)[1] ||
+               st_relate(supp_1, supp_2, pattern = "F***1****", sparse=FALSE)[1] ||
+               st_relate(supp_1, supp_2, pattern = "F1*******", sparse=FALSE)[1]){
+      pgo1_boundary <- spa_boundary_pregion(pgo1, bound_part = "line")
+      pgo2_boundary <- spa_boundary_pregion(pgo2, bound_part = "line")
+      bl <- spa_intersection(pgo1_boundary, pgo2_boundary, itype = itype)
+  
+      plength <- spa_length(bl)
+      length_support <- st_length(bl@supp)
+  
+      result <- plength/length_support
+    } else {
+      pgo1_boundary <- spa_boundary_pregion(pgo1, bound_part = "region")
+      pgo2_boundary <- spa_boundary_pregion(pgo2, bound_part = "region")
+      br <- spa_intersection(pgo1_boundary, pgo2_boundary, itype = itype)
+      br_area <- spa_area(br)
+      area_support <- st_area(br@supp)
+  
+      result <- br_area/area_support
+    }
   }
   spa_eval_relation(ret, result, ...)
 }
@@ -1158,22 +1169,23 @@ spa_disjoint <- function(pgo1, pgo2, itype="min", ret = "degree", ...){
 
   supp_pgo1 <- pgo1@supp
   supp_pgo2 <- pgo2@supp
-  result <- 0
+  
+  result <- NULL
 
   if(st_disjoint(supp_pgo1, supp_pgo2, sparse=FALSE)[1]){
     result <- 1
-  }
-
-  r_overlap <- spa_overlap(pgo1, pgo2, itype = itype)
-  r_meet <- spa_meet(pgo1, pgo2)
-
-  if((r_overlap == 1) || (r_meet == 1) ||
-      spa_exact_inside(pgo1, pgo2) ||
-      spa_exact_inside(pgo2, pgo1) ||
-      spa_exact_equal(pgo2, pgo1))  {
-    result <- 0
   } else {
-    result <- 1 - max(r_overlap, r_meet)
+    r_overlap <- spa_overlap(pgo1, pgo2, itype = itype)
+    r_meet <- spa_meet(pgo1, pgo2)
+  
+    if(r_overlap == 1 || r_meet == 1 ||
+        spa_exact_inside(pgo1, pgo2) ||
+        spa_exact_inside(pgo2, pgo1) ||
+        spa_exact_equal(pgo2, pgo1))  {
+      result <- 0
+    } else {
+      result <- 1 - max(r_overlap, r_meet)
+    }
   }
   spa_eval_relation(ret, result, ...)
 }
@@ -1191,25 +1203,26 @@ spa_disjoint <- function(pgo1, pgo2, itype="min", ret = "degree", ...){
 spa_equal <- function(pgo1, pgo2, utype = "max", ret = 'degree', ...){
 
   check_spa_topological_condition(pgo1, pgo2)
-
+  result <- NULL
+  
   if(spa_exact_equal(pgo1, pgo2)){
     result <- 1
-  }
-
-  supp_pgo1 <- pgo1@supp
-  supp_pgo2 <- pgo2@supp
-
-  if(st_disjoint(supp_pgo1, supp_pgo2, sparse=FALSE)[1] ||
-     st_touches(supp_pgo1, supp_pgo2, sparse=FALSE)[1]){
-    result <- 0
   } else {
-    r_diff <- spa_difference(pgo1, pgo2, dtype="f_abs_diff")
-    r_union <- spa_union(pgo1, pgo2, utype = utype)
-
-    r_spa_area <- spa_area(r_diff)
-    r_sfg_area <- st_area(r_union@supp)
-
-    result <- 1 - (r_spa_area/r_sfg_area)
+    supp_pgo1 <- pgo1@supp
+    supp_pgo2 <- pgo2@supp
+  
+    if(st_disjoint(supp_pgo1, supp_pgo2, sparse=FALSE)[1] ||
+       st_touches(supp_pgo1, supp_pgo2, sparse=FALSE)[1]){
+      result <- 0
+    } else {
+      r_diff <- spa_difference(pgo1, pgo2, dtype = "f_abs_diff")
+      r_union <- spa_union(pgo1, pgo2, utype = utype)
+  
+      r_spa_area <- spa_area(r_diff)
+      r_sfg_area <- st_area(r_union@supp)
+  
+      result <- 1 - (r_spa_area/r_sfg_area)
+    }
   }
   spa_eval_relation(ret, result, ...)
 }
@@ -1225,23 +1238,22 @@ spa_equal <- function(pgo1, pgo2, utype = "max", ret = 'degree', ...){
 spa_inside <- function(pgo1, pgo2, utype = "max", ret = 'degree', ...){
 
   check_spa_topological_condition(pgo1, pgo2)
-
+  result <- NULL
+  
   if(spa_exact_inside(pgo1, pgo2)){
     result <- 1
-  }
-
-  supp_pgo1 <- pgo1@supp
-  supp_pgo2 <- pgo2@supp
-
-  if(spa_equal(pgo1, pgo2, utype = utype) == 1 ||
-     st_disjoint(supp_pgo1, supp_pgo2, sparse=FALSE)[1] ||
-     st_touches(supp_pgo1, supp_pgo2, sparse=FALSE)[1]){
-    result <- 0
-  } else {
-
-    r_diff <- spa_difference(pgo1, pgo2, dtype = "f_bound_diff")
-
-    result <- 1 - (spa_area(r_diff)/st_area(supp_pgo1))
+  } else { 
+    supp_pgo1 <- pgo1@supp
+    supp_pgo2 <- pgo2@supp
+  
+    if(spa_equal(pgo1, pgo2, utype = utype) == 1 ||
+       st_disjoint(supp_pgo1, supp_pgo2, sparse=FALSE)[1] ||
+       st_touches(supp_pgo1, supp_pgo2, sparse=FALSE)[1]){
+      result <- 0
+    } else {
+      r_diff <- spa_difference(pgo1, pgo2, dtype = "f_bound_diff")
+      result <- 1 - (spa_area(r_diff)/st_area(supp_pgo1))
+    }
   }
   spa_eval_relation(ret, result, ...)
 }
@@ -1407,7 +1419,7 @@ spa_set_classification <- function(classes, mfs){
 
   if(!(length(classes) == length(mfs))){
     stop("Classes and topological_mfs have different lengths.", call. = FALSE)
-  } else if(class(classes) != "character"){
+  } else if(!is.character(classes)){
     stop("Classes need to be a character vector.", call. = FALSE)
   } else if(any(sapply(mfs, function(x) !(is.function(x))))){
     stop("The parameter mfs have to be a list of functions (generated by FuzzyR::genmf).", call. = FALSE)
