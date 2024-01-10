@@ -1,12 +1,12 @@
-0c98259f17be73c664354bc930c9d385 *DESCRIPTION
-6700a0d4d2ee3ac4d022920de6c4217a *NAMESPACE
-b370060a8ffbfad04fd26b722d0646a9 *NEWS.md
+f892ae3acab98c13832861d0315c632f *DESCRIPTION
+8cccdc4fdfcb2512e72ae1dbbe7e723b *NAMESPACE
+5275e434800a20714b750f520ceb9185 *NEWS.md
 e6aa5fceee90fdf7318bf1973ac121a7 *R/basic_functions.R
 aab1a26891ea62bfe2623fd213cf4ef4 *R/construction_module.R
 6053668247cf57d9f04bf0e9dbb55a97 *R/data_types.R
 29e357a53338b2989b79271b2d65a6bc *R/fsi_module.R
 71eca384527d34e35a00f9b395d8530e *R/fuzzy_geom_set_operations.R
-1f641c43a08246a0f0b010cc6d31276c *R/fuzzy_numerical_operations.R
+027897fa01e52c073c32bfd8fde60a72 *R/fuzzy_numerical_operations.R
 e9388b0e29123e01a47cdbc0add22977 *R/fuzzy_topological_relations.R
 410779e034292fed3c66bc3378009247 *R/general_operations.R
 3a95b1fb3f86f5e44347aae2adaabf63 *R/internal_functions.R
